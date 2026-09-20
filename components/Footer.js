@@ -7,8 +7,8 @@ export default function Footer() {
             HERI<span className="text-cyan">.</span>DEV
           </p>
           <p className="mt-2 max-w-sm text-sm text-muted">
-            Mahasiswa Informatika, fokus AI Engineering. Membangun website
-            full-stack, automation AI, dan eksperimen lainnya.
+            Sarjana Teknik Informatika USTI https://usti.ac.id/ — fokus AI Engineering Dan Data Science. Membangun
+website full-stack, automation AI, dan eksperimen lainnya.
           </p>
         </div>
         <p className="text-xs text-muted">
