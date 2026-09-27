@@ -112,20 +112,20 @@ export default function SiteContentManager({ settings, onSaved, onClose }) {
             className="w-full rounded-lg border border-line bg-void px-4 py-2.5 text-sm text-ink outline-none file:mr-4 file:rounded-full file:border-0 file:bg-cyan file:px-4 file:py-1.5 file:text-void"
           />
           {form.cv_url ? (
-            
-              href={form.cv_url}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-2 inline-flex items-center gap-1.5 text-xs text-cyan hover:underline"
-            >
-              <FileText size={14} /> Lihat CV yang sedang aktif
-            </a>
-          ) : (
-            <p className="mt-2 text-xs text-muted">
-              Belum ada CV yang diupload — tombol "CV" di navbar belum muncul.
-            </p>
-          )}
-        </div>
+  <a
+    href={form.cv_url}
+    target="_blank"
+    rel="noreferrer"
+    className="mt-2 inline-flex items-center gap-1.5 text-xs text-cyan hover:underline"
+  >
+    <FileText size={14} /> Lihat CV yang sedang aktif
+  </a>
+) : (
+  <p className="mt-2 text-xs text-muted">
+    Belum ada CV yang diupload — tombol "CV" di navbar belum muncul.
+  </p>
+)}
+</div>
 
         <p className="pt-2 font-display text-xs tracking-[0.15em] text-magenta">
           BAGIAN HERO
