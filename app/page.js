@@ -26,7 +26,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <Navbar />
+      <Navbar cvUrl={settings.cv_url} />
       <main>
         <Hero
           eyebrow={settings.hero_eyebrow}
