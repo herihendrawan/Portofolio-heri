@@ -16,12 +16,12 @@ export default function Navbar({ cvUrl }) {
             Tentang
           </Link>
           {cvUrl ? (
-            <a>
+            <a
               href={cvUrl}
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-1.5 rounded-full border border-line px-4 py-1.5 text-ink transition-colors hover:border-cyan hover:text-cyan"
-            
+            >
               <FileDown size={14} /> CV
             </a>
           ) : null}
