@@ -142,6 +142,35 @@ create policy "Authenticated can delete project images"
   to authenticated
   using (bucket_id = 'project-images');
 
+-- Bucket khusus dokumen (CV, dsb)
+insert into storage.buckets (id, name, public)
+values ('documents', 'documents', true)
+on conflict (id) do nothing;
+
+drop policy if exists "Public can view documents" on storage.objects;
+create policy "Public can view documents"
+  on storage.objects for select
+  to anon, authenticated
+  using (bucket_id = 'documents');
+
+drop policy if exists "Authenticated can upload documents" on storage.objects;
+create policy "Authenticated can upload documents"
+  on storage.objects for insert
+  to authenticated
+  with check (bucket_id = 'documents');
+
+drop policy if exists "Authenticated can update documents" on storage.objects;
+create policy "Authenticated can update documents"
+  on storage.objects for update
+  to authenticated
+  using (bucket_id = 'documents');
+
+drop policy if exists "Authenticated can delete documents" on storage.objects;
+create policy "Authenticated can delete documents"
+  on storage.objects for delete
+  to authenticated
+  using (bucket_id = 'documents');
+
 -- ============================================================
 -- 6. Konten hero & tombol WhatsApp (baris tunggal, diedit dari CMS)
 create table if not exists public.site_settings (
@@ -152,6 +181,8 @@ create table if not exists public.site_settings (
   hero_subtitle text not null default 'Kumpulan project full-stack web development, automation AI dengan n8n, dan berbagai eksperimen lain — sebagian besar dibangun dengan bantuan AI, dari ide sampai deploy.',
   cta_primary_label text not null default 'Lihat semua proyek',
   cta_secondary_label text not null default 'Tentang saya',
+  footer_bio text not null default 'S.Kom, Teknik Informatika — fokus AI Engineering. Membangun website full-stack, automation AI, dan eksperimen lainnya.',
+  cv_url text,
   whatsapp_number text not null default '6281234567890',
   whatsapp_message text not null default 'Halo, saya lihat portofolio kamu dan ingin diskusi project.',
   whatsapp_enabled boolean not null default true,
@@ -197,3 +228,66 @@ values
     100
   )
 on conflict (slug) do nothing;
+
+-- ============================================================
+-- 8. Foto profil, pendidikan, sertifikat
+-- ============================================================
+
+-- 1. Kolom foto profil di site_settings
+alter table public.site_settings
+  add column if not exists profile_photo_url text;
+
+-- 2. Tabel pendidikan
+create table if not exists public.education (
+  id uuid primary key default gen_random_uuid(),
+  institution text not null,
+  degree text not null,
+  period text,
+  description text,
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now()
+);
+
+-- 3. Tabel sertifikat
+create table if not exists public.certificates (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  issuer text not null,
+  issued_date text,
+  credential_url text,
+  image_url text,
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now()
+);
+
+-- 4. RLS: publik boleh baca, hanya admin yang login boleh tulis
+do $$
+declare t text;
+begin
+  foreach t in array array['education', 'certificates'] loop
+    execute format('alter table public.%I enable row level security', t);
+
+    execute format('drop policy if exists %I on public.%I', 'Public can read ' || t, t);
+    execute format(
+      'create policy %I on public.%I for select to anon, authenticated using (true)',
+      'Public can read ' || t, t);
+
+    execute format('drop policy if exists %I on public.%I', 'Authenticated can insert ' || t, t);
+    execute format(
+      'create policy %I on public.%I for insert to authenticated with check (true)',
+      'Authenticated can insert ' || t, t);
+
+    execute format('drop policy if exists %I on public.%I', 'Authenticated can update ' || t, t);
+    execute format(
+      'create policy %I on public.%I for update to authenticated using (true) with check (true)',
+      'Authenticated can update ' || t, t);
+
+    execute format('drop policy if exists %I on public.%I', 'Authenticated can delete ' || t, t);
+    execute format(
+      'create policy %I on public.%I for delete to authenticated using (true)',
+      'Authenticated can delete ' || t, t);
+  end loop;
+end $$;
+
+-- 5. Muat ulang skema supaya kolom/tabel baru langsung dikenali
+notify pgrst, 'reload schema';

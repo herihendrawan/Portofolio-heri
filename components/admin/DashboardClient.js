@@ -2,16 +2,29 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Pencil, Trash2, LogOut, Tags, LayoutTemplate } from "lucide-react";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  LogOut,
+  Tags,
+  LayoutTemplate,
+  GraduationCap,
+  Award,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { buildCategoryMap, UNKNOWN_CATEGORY } from "@/lib/categories";
+import { EDUCATION_CONFIG, CERTIFICATES_CONFIG } from "@/lib/collections";
 import ProjectForm from "@/components/admin/ProjectForm";
 import CategoryManager from "@/components/admin/CategoryManager";
 import SiteContentManager from "@/components/admin/SiteContentManager";
+import CollectionManager from "@/components/admin/CollectionManager";
 
 export default function DashboardClient({
   initialProjects,
   initialCategories,
+  initialEducation,
+  initialCertificates,
   initialSettings,
   userEmail,
 }) {
@@ -20,11 +33,15 @@ export default function DashboardClient({
 
   const [projects, setProjects] = useState(initialProjects);
   const [categories, setCategories] = useState(initialCategories);
+  const [education, setEducation] = useState(initialEducation);
+  const [certificates, setCertificates] = useState(initialCertificates);
   const [settings, setSettings] = useState(initialSettings);
 
   const [formOpen, setFormOpen] = useState(false);
   const [categoryManagerOpen, setCategoryManagerOpen] = useState(false);
   const [contentManagerOpen, setContentManagerOpen] = useState(false);
+  const [educationOpen, setEducationOpen] = useState(false);
+  const [certificatesOpen, setCertificatesOpen] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
 
@@ -45,6 +62,24 @@ export default function DashboardClient({
       .select("*")
       .order("sort_order", { ascending: false });
     setCategories(data ?? []);
+  }
+
+  async function refreshEducation() {
+    const { data } = await supabase
+      .from("education")
+      .select("*")
+      .order("sort_order", { ascending: false })
+      .order("created_at", { ascending: false });
+    setEducation(data ?? []);
+  }
+
+  async function refreshCertificates() {
+    const { data } = await supabase
+      .from("certificates")
+      .select("*")
+      .order("sort_order", { ascending: false })
+      .order("created_at", { ascending: false });
+    setCertificates(data ?? []);
   }
 
   function openNewForm() {
@@ -70,6 +105,11 @@ export default function DashboardClient({
     router.refresh();
   }
 
+  const overlayClass =
+    "fixed inset-0 z-50 flex items-center justify-center bg-void/80 p-4 backdrop-blur-sm";
+  const secondaryBtn =
+    "flex items-center gap-2 rounded-full border border-line px-5 py-2.5 text-sm text-ink hover:border-cyan hover:text-cyan";
+
   return (
     <main className="mx-auto min-h-screen max-w-5xl px-6 py-12">
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-line pb-6">
@@ -86,17 +126,17 @@ export default function DashboardClient({
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <button
-            onClick={() => setContentManagerOpen(true)}
-            className="flex items-center gap-2 rounded-full border border-line px-5 py-2.5 text-sm text-ink hover:border-cyan hover:text-cyan"
-          >
-            <LayoutTemplate size={16} /> Kelola Konten
+          <button onClick={() => setContentManagerOpen(true)} className={secondaryBtn}>
+            <LayoutTemplate size={16} /> Konten &amp; Foto
           </button>
-          <button
-            onClick={() => setCategoryManagerOpen(true)}
-            className="flex items-center gap-2 rounded-full border border-line px-5 py-2.5 text-sm text-ink hover:border-cyan hover:text-cyan"
-          >
-            <Tags size={16} /> Kelola Kategori
+          <button onClick={() => setEducationOpen(true)} className={secondaryBtn}>
+            <GraduationCap size={16} /> Pendidikan
+          </button>
+          <button onClick={() => setCertificatesOpen(true)} className={secondaryBtn}>
+            <Award size={16} /> Sertifikat
+          </button>
+          <button onClick={() => setCategoryManagerOpen(true)} className={secondaryBtn}>
+            <Tags size={16} /> Kategori
           </button>
           <button
             onClick={openNewForm}
@@ -156,7 +196,7 @@ export default function DashboardClient({
       </div>
 
       {formOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-void/80 p-4 backdrop-blur-sm">
+        <div className={overlayClass}>
           <div className="w-full max-w-2xl">
             <ProjectForm
               project={editingProject}
@@ -172,7 +212,7 @@ export default function DashboardClient({
       ) : null}
 
       {categoryManagerOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-void/80 p-4 backdrop-blur-sm">
+        <div className={overlayClass}>
           <CategoryManager
             categories={categories}
             onClose={() => setCategoryManagerOpen(false)}
@@ -182,7 +222,7 @@ export default function DashboardClient({
       ) : null}
 
       {contentManagerOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-void/80 p-4 backdrop-blur-sm">
+        <div className={overlayClass}>
           <SiteContentManager
             settings={settings}
             onClose={() => setContentManagerOpen(false)}
@@ -190,6 +230,28 @@ export default function DashboardClient({
               setSettings(updated);
               setContentManagerOpen(false);
             }}
+          />
+        </div>
+      ) : null}
+
+      {educationOpen ? (
+        <div className={overlayClass}>
+          <CollectionManager
+            {...EDUCATION_CONFIG}
+            items={education}
+            onChanged={refreshEducation}
+            onClose={() => setEducationOpen(false)}
+          />
+        </div>
+      ) : null}
+
+      {certificatesOpen ? (
+        <div className={overlayClass}>
+          <CollectionManager
+            {...CERTIFICATES_CONFIG}
+            items={certificates}
+            onChanged={refreshCertificates}
+            onClose={() => setCertificatesOpen(false)}
           />
         </div>
       ) : null}

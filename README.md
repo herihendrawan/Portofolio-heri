@@ -77,6 +77,12 @@ Di dashboard, klik tombol **Kelola Konten** untuk mengubah:
 
 **Kalau project sudah pernah di-deploy sebelumnya**, jalankan `supabase/migration_site_settings.sql` sekali di SQL Editor Supabase. Untuk instalasi baru, `supabase/schema.sql` sudah termasuk tabel ini.
 
+### Upload CV
+
+Di panel "Kelola Konten", ada bagian **CV** paling atas — upload file PDF CV kamu di situ. Setelah tersimpan, tombol **CV** otomatis muncul di navbar (kanan atas), yang saat diklik membuka CV di tab baru. Kalau belum ada CV yang diupload, tombolnya otomatis tersembunyi.
+
+**Kalau project sudah pernah di-deploy sebelumnya**, jalankan `supabase/migration_cv_upload.sql` sekali di SQL Editor Supabase (ini nambah kolom `cv_url` dan bucket storage `documents`). Untuk instalasi baru, `supabase/schema.sql` sudah termasuk semuanya.
+
 Nomor WhatsApp ditulis dengan kode negara tanpa `+` atau spasi, contoh: `6281234567890` untuk nomor Indonesia `081234567890`.
 
 ## 6. Deploy ke Vercel
@@ -92,3 +98,12 @@ Nomor WhatsApp ditulis dengan kode negara tanpa `+` atau spasi, contoh: `6281234
 - Font: Chakra Petch (judul/display) + Inter (body).
 - Animasi: reveal bertahap di hero (satu momen saat halaman dibuka), transisi grid saat filter kategori diganti (Framer Motion layout + AnimatePresence), efek hover glow di kartu project.
 - Menghormati prefers-reduced-motion untuk pengguna yang menonaktifkan animasi di sistemnya.
+
+### Perkenalan, foto, pendidikan, dan sertifikat
+
+Urutan halaman utama: perkenalan + foto, pendidikan, sertifikat, lalu proyek. Semuanya diatur dari dashboard:
+- **Konten & Foto**: teks perkenalan di hero, upload foto profil, CV, bio footer, WhatsApp
+- **Pendidikan**: tambah/edit/hapus riwayat pendidikan (institusi, gelar, periode, keterangan)
+- **Sertifikat**: tambah/edit/hapus sertifikat (nama, penerbit, tanggal, link kredensial, gambar)
+
+Section pendidikan dan sertifikat otomatis tersembunyi kalau masih kosong. Jalankan `supabase/migration_profile_education_certificates.sql` sekali di SQL Editor Supabase (instalasi baru sudah termasuk di `schema.sql`).

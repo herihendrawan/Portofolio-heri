@@ -10,6 +10,7 @@ export default function SiteContentManager({ settings, onSaved, onClose }) {
 
   const [form, setForm] = useState(settings);
   const [cvFile, setCvFile] = useState(null);
+  const [photoFile, setPhotoFile] = useState(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -45,6 +46,27 @@ export default function SiteContentManager({ settings, onSaved, onClose }) {
       cvUrl = publicUrlData.publicUrl;
     }
 
+    let photoUrl = form.profile_photo_url || null;
+
+    if (photoFile) {
+      const photoName = `profile-${Date.now()}-${slugify(photoFile.name)}`;
+      const { error: photoError } = await supabase.storage
+        .from("project-images")
+        .upload(photoName, photoFile, { upsert: true });
+
+      if (photoError) {
+        setSaving(false);
+        setError(`Gagal upload foto: ${photoError.message}`);
+        return;
+      }
+
+      const { data: photoUrlData } = supabase.storage
+        .from("project-images")
+        .getPublicUrl(photoName);
+
+      photoUrl = photoUrlData.publicUrl;
+    }
+
     const { error: updateError } = await supabase
       .from("site_settings")
       .update({
@@ -59,6 +81,7 @@ export default function SiteContentManager({ settings, onSaved, onClose }) {
         whatsapp_message: form.whatsapp_message,
         whatsapp_enabled: form.whatsapp_enabled,
         cv_url: cvUrl,
+        profile_photo_url: photoUrl,
       })
       .eq("id", 1);
 
@@ -69,7 +92,7 @@ export default function SiteContentManager({ settings, onSaved, onClose }) {
       return;
     }
 
-    onSaved({ ...form, cv_url: cvUrl });
+    onSaved({ ...form, cv_url: cvUrl, profile_photo_url: photoUrl });
   }
 
   return (
@@ -96,6 +119,31 @@ export default function SiteContentManager({ settings, onSaved, onClose }) {
 
       <div className="mt-6 space-y-4">
         <p className="font-display text-xs tracking-[0.15em] text-magenta">
+          FOTO PROFIL
+        </p>
+
+        <div>
+          <label className="mb-1 block text-xs text-muted">
+            Upload foto (disarankan potret rasio 4:5, wajah di tengah)
+          </label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setPhotoFile(e.target.files?.[0] ?? null)}
+            className="w-full rounded-lg border border-line bg-void px-4 py-2.5 text-sm text-ink outline-none file:mr-4 file:rounded-full file:border-0 file:bg-cyan file:px-4 file:py-1.5 file:text-void"
+          />
+          {form.profile_photo_url ? (
+            <p className="mt-2 text-xs text-muted">
+              Foto sudah terpasang. Pilih file baru hanya kalau mau menggantinya.
+            </p>
+          ) : (
+            <p className="mt-2 text-xs text-muted">
+              Belum ada foto, jadi bagian perkenalan tampil tanpa foto.
+            </p>
+          )}
+        </div>
+
+        <p className="pt-2 font-display text-xs tracking-[0.15em] text-magenta">
           CV
         </p>
 

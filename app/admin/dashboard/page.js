@@ -11,7 +11,13 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [{ data: projects }, { data: categories }, settings] = await Promise.all([
+  const [
+    { data: projects },
+    { data: categories },
+    { data: education },
+    { data: certificates },
+    settings,
+  ] = await Promise.all([
     supabase
       .from("projects")
       .select("*")
@@ -21,6 +27,16 @@ export default async function DashboardPage() {
       .from("categories")
       .select("*")
       .order("sort_order", { ascending: false }),
+    supabase
+      .from("education")
+      .select("*")
+      .order("sort_order", { ascending: false })
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("certificates")
+      .select("*")
+      .order("sort_order", { ascending: false })
+      .order("created_at", { ascending: false }),
     getSiteSettings(supabase),
   ]);
 
@@ -28,6 +44,8 @@ export default async function DashboardPage() {
     <DashboardClient
       initialProjects={projects ?? []}
       initialCategories={categories ?? []}
+      initialEducation={education ?? []}
+      initialCertificates={certificates ?? []}
       initialSettings={settings}
       userEmail={user?.email}
     />
